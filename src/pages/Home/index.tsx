@@ -13,6 +13,7 @@ import {
   StartButton,
   TaskInput,
 } from "./styles";
+import { useState } from "react";
 
 const newCycleFromValidationSchema = zod.object({
   task: zod.string().min(1, "Informe a tarefa"),
@@ -22,7 +23,16 @@ const newCycleFromValidationSchema = zod.object({
 
 type NewCycleFormData = zod.infer<typeof newCycleFromValidationSchema>;
 
+interface Cycle {
+  id: string;
+  task: string;
+  minutesAmount: number;
+}
+
 export function Home() {
+  const [cycles, setCycles] = useState<Cycle[]>([]);
+  const [cycleId, setCycleId] = useState<string | null>(null);
+
   const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFromValidationSchema),
     defaultValues: {
@@ -32,9 +42,22 @@ export function Home() {
   });
 
   function handleCreateNewCycle(data: any) {
-    console.log(data);
+    const id = String(new Date().getTime());
+
+    const newCycle: Cycle = {
+      id: String(new Date().getTime()),
+      task: data.task,
+      minutesAmount: data.minutesAmount,
+    };
+
+    setCycles((state) => [...state, newCycle]);
+    setCycleId(id);
+
     reset();
   }
+
+  const activeCycle = cycles.find((cycle) => cycle.id === cycleId);
+
   const task = watch("task");
   const isSubmitDisabled = !task;
 
@@ -64,7 +87,7 @@ export function Home() {
             step={5}
             min={5}
             max={60}
-            {...register("minutesInput", { valueAsNumber: true })}
+            {...register("MinutesInput", { valueAsNumber: true })}
           />
 
           <span>minutos.</span>
